@@ -1,0 +1,15 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: cmastudios
+website: ${project.url}
+main: ${main.class}
+commands:
+  setgroup:
+    description: Set a player to a different group
+    usage: /<command> <player> <group>
+    aliases: [chgrp, adduser]
+    permission: cpermissions.control
+permissions:
+  cpermissions.control:
+    description: Required in order to change player's ranks

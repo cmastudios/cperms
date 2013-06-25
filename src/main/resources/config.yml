@@ -1,0 +1,53 @@
+autoperms:
+  - karma.%s # assign karma.groupname to each group and those that inherit it, order position 2
+groups: # list of groups, no specific order
+  recruit:
+    default: true  # default rank to give a player on first join or if none found
+    info:
+      prefix: '&d' # display name prefix, the character '&' delegates a color code
+      suffix: '&f' # display name suffix
+      build: true  # prevent or allow building
+    inheritance:   # inherit from groups in this list, order position 1
+    permissions:   # group specific permissions, order position 3
+      - war.player # add a permission (set it to true)
+      - -war.build # negate a permission (set it to false)
+    worlds: # world specific permissions, order position 4
+      pvp:
+        - war.pvp
+  builder:
+    default: false
+    info:
+      prefix: '&7'
+      suffix: '&f'
+      build: true
+    inheritance:
+      - recruit
+    permissions:
+      - war.build
+  moderator:
+    default: false
+    info:
+      prefix: '&9'
+      suffix: '&f'
+      build: true
+    inheritance:
+      - builder # inheriting a group also inherits permissions from that group's inheritance
+    permissions:
+      - essentials.ban
+  admin:
+    default: false
+    info:
+      prefix: '&c'
+      suffix: '&f'
+      build: true
+    inheritance:
+      - moderator
+    permissions:
+      - bukkit.command.stop
+mysql:
+  enabled: false
+  host: localhost
+  port: 3306
+  database: permissions
+  username: root
+  password: access
