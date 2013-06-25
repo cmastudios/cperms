@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>cPermissions</name>
-    <url>http://cmastudios.github.io/mcparkour</url>
+    <url>http://cmastudios.github.io/cperms</url>
     <description>Permission manager plugin using mix of database and flatfile.</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -14,9 +14,9 @@
         <netbeans.hint.license>gpl30</netbeans.hint.license>
     </properties>
     <scm>
-        <connection>scm:git:git://github.com/cmastudios/mcparkour.git</connection>
-        <developerConnection>scm:git:git@github.com:cmastudios/mcparkour.git</developerConnection>
-        <url>https://github.com/cmastudios/mcparkour</url>
+        <connection>scm:git:git://github.com/cmastudios/cperms.git</connection>
+        <developerConnection>scm:git:git@github.com:cmastudios/cperms.git</developerConnection>
+        <url>https://github.com/cmastudios/cperms</url>
     </scm>
     <developers>
         <developer>
@@ -40,10 +40,14 @@
     </licenses>
     <issueManagement>
         <system>GitHub issues</system>
-        <url>https://github.com/cmastudios/mcparkour/issues</url>
+        <url>https://github.com/cmastudios/cperms/issues</url>
     </issueManagement>
     <distributionManagement>
-        <downloadUrl>http://cmastudios.github.io/mcparkour</downloadUrl>
+        <downloadUrl>http://cmastudios.github.io/cperms</downloadUrl>
+        <repository>
+            <id>cma-repo</id>
+            <url>scp://cmastudios.me/var/www/repo/maven/</url>
+        </repository>
     </distributionManagement>
     <repositories>
         <repository>
@@ -76,5 +80,12 @@
                 <directory>${basedir}/src/main/resources/</directory>
             </resource>    
         </resources>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>1.0</version>
+            </extension>
+        </extensions>
     </build>
 </project>
