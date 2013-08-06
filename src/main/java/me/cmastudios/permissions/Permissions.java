@@ -45,8 +45,8 @@ public class Permissions extends JavaPlugin {
         for (Player player : this.getServer().getOnlinePlayers()) {
             this.updatePermissions(player);
         }
-        this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
+        this.getConfig().options().copyDefaults(false);
         this.connectDatabase();
         this.getCommand("setgroup").setExecutor(new SetGroupCommand(this));
     }

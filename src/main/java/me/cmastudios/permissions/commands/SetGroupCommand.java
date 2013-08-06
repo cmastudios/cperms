@@ -51,11 +51,16 @@ public class SetGroupCommand implements CommandExecutor {
             return true;
         }
         try {
+            Group oldGroup = PlayerGroupDatabase.getGroup(plugin, player);
+            if (oldGroup == null) {
+                oldGroup = Group.getDefaultGroup(plugin.getConfig());
+            }
             PlayerGroupDatabase.setGroup(plugin, player, group);
             if (player.isOnline()) {
                 plugin.updatePermissions(player.getPlayer());
             }
-            sender.sendMessage("Group changed");
+            Command.broadcastCommandMessage(sender, String.format("Changed group of %s from %s to %s",
+                    player.getName(), oldGroup.getName(), group.getName()));
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, "Setting player group", ex);
         }
