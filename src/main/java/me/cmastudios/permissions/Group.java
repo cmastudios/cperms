@@ -170,6 +170,7 @@ public class Group {
             SimpleEntry<String, Boolean> permission = this.parsePermission(String.format(autoperm, name));
             permissions.put(permission.getKey(), permission.getValue());
         }
+        permissions.put("cpermissions.build", this.isAllowedToBuild());
         // Position 3, general group-specific permissions
         for (String perm : config.getStringList(String.format("groups.%s.permissions", name))) {
             SimpleEntry<String, Boolean> permission = this.parsePermission(perm);

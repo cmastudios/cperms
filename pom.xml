@@ -46,8 +46,12 @@
         <downloadUrl>http://cmastudios.github.io/cperms</downloadUrl>
         <repository>
             <id>cma-repo</id>
-            <url>scp://cmastudios.me/var/www/repo/maven/</url>
+            <url>http://maven.cmastudios.me/archiva/repository/internal/</url>
         </repository>
+        <snapshotRepository>
+            <id>cma-repo</id>
+            <url>http://maven.cmastudios.me/archiva/repository/snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
     <repositories>
         <repository>

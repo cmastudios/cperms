@@ -95,11 +95,16 @@ public class Permissions extends JavaPlugin {
     }
 
     public Connection getDatabaseConnection() {
-        try {
-            if (database == null || !database.isValid(1)) {
+        if (this.getConfig().getBoolean("mysql.enabled", false)) {
+            try {
+                if (database == null || !database.isValid(1)) {
+                    this.connectDatabase();
+                }
+            } catch (SQLException ex) {
                 this.connectDatabase();
             }
-        } catch (SQLException ex) {
+        }
+        if (database == null) {
             this.connectDatabase();
         }
         return database;

@@ -21,6 +21,8 @@ import java.util.logging.Level;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -62,5 +64,21 @@ public class PermissionsListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerKick(final PlayerKickEvent event) {
         plugin.removeAttachment(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onBlockPlace(final BlockPlaceEvent event) {
+        if (plugin.getConfig().getString("buildperm", "cpermissions.build").equals("cpermissions.build")
+                && !event.getPlayer().hasPermission("cpermissions.build")) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onBlockBreak(final BlockBreakEvent event) {
+        if (plugin.getConfig().getString("buildperm", "cpermissions.build").equals("cpermissions.build")
+                && !event.getPlayer().hasPermission("cpermissions.build")) {
+            event.setCancelled(true);
+        }
     }
 }

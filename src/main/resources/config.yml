@@ -1,5 +1,6 @@
 autoperms:
   - karma.%s # assign karma.groupname to each group and those that inherit it, order position 2
+buildperm: cpermissions.build  # Change permission granted by info.build. cpermissions.build uses internal antibuild
 groups: # list of groups, no specific order
   recruit:
     default: true  # default rank to give a player on first join or if none found
