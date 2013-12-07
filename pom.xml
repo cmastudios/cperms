@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>cPermissions</name>
-    <url>http://cmastudios.github.io/cperms</url>
+    <url>http://cmastudios.me/cpermissions/</url>
     <description>Permission manager plugin using mix of database and flatfile.</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -43,13 +43,13 @@
         <url>https://github.com/cmastudios/cperms/issues</url>
     </issueManagement>
     <distributionManagement>
-        <downloadUrl>http://cmastudios.github.io/cperms</downloadUrl>
+        <downloadUrl>http://cmastudios.me/cpermissions/</downloadUrl>
         <repository>
-            <id>cma-repo</id>
+            <id>cma-repo-int</id>
             <url>http://maven.cmastudios.me/archiva/repository/internal/</url>
         </repository>
         <snapshotRepository>
-            <id>cma-repo</id>
+            <id>cma-repo-snap</id>
             <url>http://maven.cmastudios.me/archiva/repository/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
@@ -84,12 +84,5 @@
                 <directory>${basedir}/src/main/resources/</directory>
             </resource>    
         </resources>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-                <version>1.0</version>
-            </extension>
-        </extensions>
     </build>
 </project>
