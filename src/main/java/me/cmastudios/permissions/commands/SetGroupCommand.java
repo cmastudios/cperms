@@ -53,9 +53,8 @@ public class SetGroupCommand implements CommandExecutor {
         }
         try {
             Timestamp expirationTime = null;
-            if(args.length > 2) {
-                expirationTime = new Timestamp(System.currentTimeMillis());
-                expirationTime.setTime(expirationTime.getTime() + (Integer.parseInt(args[2]) * 60000));
+            if (args.length > 2) {
+                expirationTime = new Timestamp(System.currentTimeMillis() + (Integer.parseInt(args[2]) * 60000));
             }
             Group oldGroup = PlayerGroupDatabase.getGroup(plugin, player);
             if (oldGroup == null) {

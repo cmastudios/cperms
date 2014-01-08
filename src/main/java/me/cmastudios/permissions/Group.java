@@ -39,6 +39,7 @@ public class Group {
     private final String suffix;
     private final boolean allowedToBuild;
     private final Set<Group> inheritedGroups;
+    private final String fallbackGroup;
 
     /**
      * Create a new group from the group in the configuration.
@@ -56,6 +57,7 @@ public class Group {
         for (String inheritedGroupName : groupRootSection.getStringList("inheritance")) {
             this.inheritedGroups.add(new Group(groupRootSection.getParent().getConfigurationSection(inheritedGroupName)));
         }
+        this.fallbackGroup = groupRootSection.getString("info.fallback", null);
     }
 
     /**
@@ -141,6 +143,19 @@ public class Group {
      */
     public Set<Group> getInheritedGroups() {
         return inheritedGroups;
+    }
+
+    /**
+     * Get the group this is specified to fall back on when ranks expire.
+     * This will return the server's default group if there is no group
+     * specified in the configuration.
+     *
+     * @param config Server configuration for group lookup.
+     * @return fallback group or server default.
+     */
+    public Group getFallbackGroup(Configuration config) {
+        Group fallback = Group.getGroup(config, fallbackGroup);
+        return fallback == null ? Group.getDefaultGroup(config) : fallback;
     }
 
     /**

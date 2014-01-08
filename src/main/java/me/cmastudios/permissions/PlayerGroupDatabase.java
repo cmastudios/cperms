@@ -64,7 +64,8 @@ public class PlayerGroupDatabase {
     }
 
     public static Timestamp getExpirationDate(Permissions plugin, OfflinePlayer player) throws SQLException {
-        try(PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement("SELECT expiration_date FROM playergroups WHERE player = ?")) {
+        try (PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement(
+            "SELECT expiration_date FROM playergroups WHERE player = ?")) {
             stmt.setString(1, player.getName());
             try (ResultSet result = stmt.executeQuery()) {
                 if(result.next()) {

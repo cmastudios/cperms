@@ -31,6 +31,7 @@ groups: # list of groups, no specific order
       prefix: '&9'
       suffix: '&f'
       build: true
+      fallback: builder # Move players from moderator to builder when their rank expires
     inheritance:
       - builder # inheriting a group also inherits permissions from that group's inheritance
     permissions:
