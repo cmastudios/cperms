@@ -17,10 +17,7 @@
 package me.cmastudios.permissions;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -85,7 +82,11 @@ public class Permissions extends JavaPlugin {
                 this.database = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getPath());
             }
             try (Statement initStatement = this.database.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playergroups (player VARCHAR(16), group_name TEXT)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playergroups (player VARCHAR(16) PRIMARY KEY, group_name TEXT, expiration_date DATETIME NULL)");
+                try { // Update code
+                    initStatement.executeUpdate("ALTER TABLE playergroups ADD COLUMN expiration_date DATETIME NULL");
+                } catch (SQLException ignored) {
+                }
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -120,14 +121,26 @@ public class Permissions extends JavaPlugin {
         } catch (SQLException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to get group for player " + player.getName(), ex);
         }
+        if(group != null) {
+            try {
+                Timestamp expirationDate = PlayerGroupDatabase.getExpirationDate(this,player);
+                if(expirationDate!=null && expirationDate.before(new Timestamp(System.currentTimeMillis()))) {
+                    group = group.getFallbackGroup(this.getConfig());
+                    PlayerGroupDatabase.setGroup(this, player, group, null);
+                }
+            } catch (SQLException ex) {
+                this.getLogger().log(Level.SEVERE, "Failed to check rank expiration for player " + player.getName(), ex);
+            }
+        }
         if (group == null) {
             group = Group.getDefaultGroup(this.getConfig());
             if (group == null) {
                 throw new RuntimeException(new InvalidConfigurationException("There is no default group defined for this server!"));
             }
             try {
-                PlayerGroupDatabase.setGroup(this, player, group);
+                PlayerGroupDatabase.setGroup(this, player, group, null);
             } catch (SQLException ex) {
+                this.getLogger().log(Level.SEVERE, "Failed to change rank to default for " + player.getName(), ex);
             }
         }
         Map<String, Boolean> playerPermissions = group.getPermissions(this.getConfig(), player.getWorld());

@@ -7,7 +7,7 @@ main: ${main.class}
 commands:
   setgroup:
     description: Set a player to a different group
-    usage: /<command> <player> <group>
+    usage: /<command> <player> <group> [minutes]
     aliases: [chgrp, adduser]
     permission: cpermissions.control
 permissions:

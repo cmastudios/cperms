@@ -17,6 +17,7 @@
 package me.cmastudios.permissions.commands;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.logging.Level;
 import me.cmastudios.permissions.Group;
 import me.cmastudios.permissions.Permissions;
@@ -41,7 +42,7 @@ public class SetGroupCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length != 2) {
+        if (args.length < 2) {
             return false;
         }
         OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
@@ -51,11 +52,15 @@ public class SetGroupCommand implements CommandExecutor {
             return true;
         }
         try {
+            Timestamp expirationTime = null;
+            if (args.length > 2) {
+                expirationTime = new Timestamp(System.currentTimeMillis() + (Integer.parseInt(args[2]) * 60000));
+            }
             Group oldGroup = PlayerGroupDatabase.getGroup(plugin, player);
             if (oldGroup == null) {
                 oldGroup = Group.getDefaultGroup(plugin.getConfig());
             }
-            PlayerGroupDatabase.setGroup(plugin, player, group);
+            PlayerGroupDatabase.setGroup(plugin, player, group, expirationTime);
             if (player.isOnline()) {
                 plugin.updatePermissions(player.getPlayer());
             }
