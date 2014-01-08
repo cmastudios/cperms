@@ -16,10 +16,8 @@
  */
 package me.cmastudios.permissions;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+
 import org.bukkit.OfflinePlayer;
 
 /**
@@ -41,16 +39,17 @@ public class PlayerGroupDatabase {
         }
     }
 
-    public static void setGroup(Permissions plugin, OfflinePlayer player, Group group) throws SQLException {
+    public static void setGroup(Permissions plugin, OfflinePlayer player, Group group, Timestamp expirationDate) throws SQLException {
         final String stmtText;
         if (PlayerGroupDatabase.exists(plugin.getDatabaseConnection(), player)) {
-            stmtText = "UPDATE playergroups SET group_name = ? WHERE player = ?";
+            stmtText = "UPDATE playergroups SET group_name = ?, expiration_date = ? WHERE player = ?";
         } else {
-            stmtText = "INSERT INTO playergroups (group_name, player) VALUES (?, ?)";
+            stmtText = "INSERT INTO playergroups (group_name, expiration_date, player) VALUES (?, ?, ?)";
         }
         try (PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement(stmtText)) {
             stmt.setString(1, group.getName());
-            stmt.setString(2, player.getName());
+            stmt.setTimestamp(2, expirationDate);
+            stmt.setString(3, player.getName());
             stmt.executeUpdate();
         }
     }
@@ -62,5 +61,19 @@ public class PlayerGroupDatabase {
                 return result.next();
             }
         }
+    }
+
+    public static Timestamp getExpirationDate(Permissions plugin, OfflinePlayer player) throws SQLException {
+        try(PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement("SELECT expiration_date FROM playergroups WHERE player = ?")) {
+            stmt.setString(1, player.getName());
+            try (ResultSet result = stmt.executeQuery()) {
+                if(result.next()) {
+                    return result.getTimestamp("expiration_date");
+                } else {
+                    return null;
+                }
+            }
+        }
+
     }
 }
