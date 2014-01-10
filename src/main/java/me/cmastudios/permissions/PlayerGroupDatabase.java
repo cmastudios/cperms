@@ -24,14 +24,15 @@ import org.bukkit.OfflinePlayer;
  *
  * @author Connor Monahan
  */
-public class PlayerGroupDatabase {
+class PlayerGroupDatabase {
 
-    public static Group getGroup(Permissions plugin, OfflinePlayer player) throws SQLException {
-        try (PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement("SELECT group_name FROM playergroups WHERE player = ?")) {
+    static Group getGroup(Permissions plugin, OfflinePlayer player) throws SQLException {
+        try (PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement(
+            "SELECT group_name FROM playergroups WHERE player = ?")) {
             stmt.setString(1, player.getName());
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    return Group.getGroup(plugin.getConfig(), result.getString("group_name"));
+                    return plugin.getGroup(result.getString("group_name"));
                 } else {
                     return null;
                 }
@@ -39,14 +40,14 @@ public class PlayerGroupDatabase {
         }
     }
 
-    public static void setGroup(Permissions plugin, OfflinePlayer player, Group group, Timestamp expirationDate) throws SQLException {
+    static void setGroup(Connection conn, OfflinePlayer player, Group group, Timestamp expirationDate) throws SQLException {
         final String stmtText;
-        if (PlayerGroupDatabase.exists(plugin.getDatabaseConnection(), player)) {
+        if (PlayerGroupDatabase.exists(conn, player)) {
             stmtText = "UPDATE playergroups SET group_name = ?, expiration_date = ? WHERE player = ?";
         } else {
             stmtText = "INSERT INTO playergroups (group_name, expiration_date, player) VALUES (?, ?, ?)";
         }
-        try (PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement(stmtText)) {
+        try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
             stmt.setString(1, group.getName());
             stmt.setTimestamp(2, expirationDate);
             stmt.setString(3, player.getName());
@@ -54,7 +55,7 @@ public class PlayerGroupDatabase {
         }
     }
 
-    public static boolean exists(Connection conn, OfflinePlayer player) throws SQLException {
+    static boolean exists(Connection conn, OfflinePlayer player) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement("SELECT group_name FROM playergroups WHERE player = ?")) {
             stmt.setString(1, player.getName());
             try (ResultSet result = stmt.executeQuery()) {
@@ -63,8 +64,8 @@ public class PlayerGroupDatabase {
         }
     }
 
-    public static Timestamp getExpirationDate(Permissions plugin, OfflinePlayer player) throws SQLException {
-        try (PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement(
+    static Timestamp getExpirationDate(Connection conn, OfflinePlayer player) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement(
             "SELECT expiration_date FROM playergroups WHERE player = ?")) {
             stmt.setString(1, player.getName());
             try (ResultSet result = stmt.executeQuery()) {
@@ -75,6 +76,5 @@ public class PlayerGroupDatabase {
                 }
             }
         }
-
     }
 }

@@ -28,7 +28,21 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
+ * Permissions groups define the permissions and other attributes (e.g name
+ * color) for their members. Groups are defined in the plugin configuration to
+ * have set permissions for themselves, in specific worlds, and inherited from
+ * other groups in the file.
+ * <p>
+ * Groups interact with other groups in the following ways:
+ * <ul>
+ * <li>Inheriting permissions
+ * <li>Rank expiration fallback
+ * </ul>
+ * <p>
+ * Please do not store copies of this class after a server reload. This class
+ * contains a copy of the plugin's configuration.
  *
+ * @see PermissionsPlayer
  * @author Connor Monahan
  */
 public class Group {
@@ -40,6 +54,7 @@ public class Group {
     private final boolean allowedToBuild;
     private final Set<Group> inheritedGroups;
     private final String fallbackGroup;
+    private final Configuration config;
 
     /**
      * Create a new group from the group in the configuration.
@@ -47,7 +62,8 @@ public class Group {
      * @param groupRootSection section of the config where this group resides.
      * Usually in groups.groupname.
      */
-    public Group(ConfigurationSection groupRootSection) {
+    Group(Configuration config, String name) {
+        ConfigurationSection groupRootSection = config.getConfigurationSection("groups." + name);
         this.name = groupRootSection.getName();
         this.Default = groupRootSection.getBoolean("default");
         this.prefix = ChatColor.translateAlternateColorCodes('&', groupRootSection.getString("info.prefix"));
@@ -55,23 +71,10 @@ public class Group {
         this.allowedToBuild = groupRootSection.getBoolean("info.build");
         this.inheritedGroups = new LinkedHashSet();
         for (String inheritedGroupName : groupRootSection.getStringList("inheritance")) {
-            this.inheritedGroups.add(new Group(groupRootSection.getParent().getConfigurationSection(inheritedGroupName)));
+            this.inheritedGroups.add(new Group(config, inheritedGroupName));
         }
         this.fallbackGroup = groupRootSection.getString("info.fallback", null);
-    }
-
-    /**
-     * Get a group by name.
-     *
-     * @param config Permissions configuration file
-     * @param name Group name
-     * @return group or null if not found
-     */
-    public static Group getGroup(Configuration config, String name) {
-        if (config.contains("groups." + name)) {
-            return new Group(config.getConfigurationSection("groups." + name));
-        }
-        return null;
+        this.config = config;
     }
 
     /**
@@ -80,11 +83,18 @@ public class Group {
      * @param config Permissions configuration file
      * @return group or null if not found. The group should never be null.
      */
-    public static Group getDefaultGroup(Configuration config) {
+    private Group getDefaultGroup(Configuration config) {
         for (String key : config.getConfigurationSection("groups").getKeys(false)) {
             if (config.getBoolean(String.format("groups.%s.default", key))) {
-                return Group.getGroup(config, key);
+                return new Group(config, key);
             }
+        }
+        return null;
+    }
+
+    private Group getGroup(Configuration config, String name) {
+        if (config.contains("groups." + name)) {
+            return new Group(config, name);
         }
         return null;
     }
@@ -150,28 +160,26 @@ public class Group {
      * This will return the server's default group if there is no group
      * specified in the configuration.
      *
-     * @param config Server configuration for group lookup.
-     * @return fallback group or server default.
+     * @return fallback group.
      */
-    public Group getFallbackGroup(Configuration config) {
-        Group fallback = Group.getGroup(config, fallbackGroup);
-        return fallback == null ? Group.getDefaultGroup(config) : fallback;
+    public Group getFallbackGroup() {
+        Group fallback = getGroup(config, fallbackGroup);
+        return fallback == null ? getDefaultGroup(config) : fallback;
     }
 
     /**
      * Get permissions assigned to a group. This includes permissions inherited
      * from other groups and autoperms.
      *
-     * @param config Permissions configuration
      * @param world World for world-specific permissions section
      * @return permissions assigned to this group in the specified world
      */
-    public Map<String, Boolean> getPermissions(Configuration config, World world) {
+    public Map<String, Boolean> getPermissions(World world) {
         Map<String, Boolean> permissions = new HashMap();
         // Position 1, inherited groups
         try {
             for (Group group : this.getInheritedGroups()) {
-                for (Map.Entry<String, Boolean> entry : group.getPermissions(config, world).entrySet()) {
+                for (Map.Entry<String, Boolean> entry : group.getPermissions(world).entrySet()) {
                     // Warning: this could cause a infinite do-loop if used by stupid admins
                     permissions.put(entry.getKey(), entry.getValue());
                 }
@@ -192,9 +200,11 @@ public class Group {
             permissions.put(permission.getKey(), permission.getValue());
         }
         // Position 4, world & group specific permissions
-        for (String perm : config.getStringList(String.format("groups.%s.worlds.%s", name, world.getName()))) {
-            SimpleEntry<String, Boolean> permission = this.parsePermission(perm);
-            permissions.put(permission.getKey(), permission.getValue());
+        if (world != null) {
+            for (String perm : config.getStringList(String.format("groups.%s.worlds.%s", name, world.getName()))) {
+                SimpleEntry<String, Boolean> permission = this.parsePermission(perm);
+                permissions.put(permission.getKey(), permission.getValue());
+            }
         }
         return permissions;
     }

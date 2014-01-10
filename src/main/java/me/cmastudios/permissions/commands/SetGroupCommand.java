@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 import java.util.logging.Level;
 import me.cmastudios.permissions.Group;
 import me.cmastudios.permissions.Permissions;
-import me.cmastudios.permissions.PlayerGroupDatabase;
+import me.cmastudios.permissions.PermissionsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -46,21 +46,18 @@ public class SetGroupCommand implements CommandExecutor {
             return false;
         }
         OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
-        Group group = Group.getGroup(plugin.getConfig(), args[1]);
+        Group group = plugin.getGroup(args[1]);
         if (group == null) {
             sender.sendMessage("Group not found");
             return true;
         }
         try {
-            Timestamp expirationTime = null;
+            PermissionsPlayer permPlayer = plugin.getPlayer(player, null);
             if (args.length > 2) {
-                expirationTime = new Timestamp(System.currentTimeMillis() + (Integer.parseInt(args[2]) * 60000));
+                permPlayer.setExpirationDate(new Timestamp(System.currentTimeMillis() + (Integer.parseInt(args[2]) * 60000)));
             }
-            Group oldGroup = PlayerGroupDatabase.getGroup(plugin, player);
-            if (oldGroup == null) {
-                oldGroup = Group.getDefaultGroup(plugin.getConfig());
-            }
-            PlayerGroupDatabase.setGroup(plugin, player, group, expirationTime);
+            Group oldGroup = permPlayer.getGroup();
+            permPlayer.setGroup(group);
             if (player.isOnline()) {
                 plugin.updatePermissions(player.getPlayer());
             }
