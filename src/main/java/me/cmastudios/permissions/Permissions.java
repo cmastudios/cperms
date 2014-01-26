@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import me.cmastudios.permissions.commands.*;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -44,6 +45,7 @@ public class Permissions extends JavaPlugin {
         }
         this.saveDefaultConfig();
         this.getConfig().options().copyDefaults(false);
+        this.getConfig().setDefaults(YamlConfiguration.loadConfiguration(new File("none"))); //Very very hacky
         this.connectDatabase();
         this.getCommand("setgroup").setExecutor(new SetGroupCommand(this));
     }
