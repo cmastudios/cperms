@@ -55,7 +55,12 @@ public class Group {
         this.allowedToBuild = groupRootSection.getBoolean("info.build");
         this.inheritedGroups = new LinkedHashSet();
         for (String inheritedGroupName : groupRootSection.getStringList("inheritance")) {
-            this.inheritedGroups.add(new Group(groupRootSection.getParent().getConfigurationSection(inheritedGroupName)));
+            ConfigurationSection section = groupRootSection.getParent().getConfigurationSection(inheritedGroupName);
+            if (section == null) {
+                throw new RuntimeException("Failed to load information for group '" + name
+                    + "': Unknown group in inheritance '" + inheritedGroupName + "'.");
+            }
+            this.inheritedGroups.add(new Group(section));
         }
         this.fallbackGroup = groupRootSection.getString("info.fallback", null);
     }
