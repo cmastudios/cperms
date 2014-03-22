@@ -3,6 +3,7 @@ package me.cmastudios.permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -136,7 +137,9 @@ public class PermissionsPlayer {
         if (permissions.containsKey(permission)) {
             return permissions.get(permission);
         }
-        PermissionDefault def = Bukkit.getPluginManager().getPermission(permission).getDefault();
+        Permission perm = Bukkit.getPluginManager().getPermission(permission);
+        PermissionDefault def = PermissionDefault.OP;
+        if (perm != null) def = perm.getDefault();
         if (def == PermissionDefault.TRUE) return true;
         if (def == PermissionDefault.OP && player.isOp()) return true;
         if (def == PermissionDefault.NOT_OP && !player.isOp()) return true;
