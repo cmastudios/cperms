@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import me.cmastudios.permissions.commands.*;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -29,10 +31,11 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
+ * Simple, lightweight permissions manager plugin cPermissions.
  *
  * @author Connor Monahan
  */
-public class Permissions extends JavaPlugin {
+public final class Permissions extends JavaPlugin {
 
     private Map<Player, PermissionAttachment> attachments = new HashMap();
     protected Connection database;
@@ -64,7 +67,7 @@ public class Permissions extends JavaPlugin {
         }
     }
 
-    public void connectDatabase() {
+    private void connectDatabase() {
         try {
             if (database != null && !database.isClosed()) {
                 database.close();
@@ -97,7 +100,7 @@ public class Permissions extends JavaPlugin {
         }
     }
 
-    public Connection getDatabaseConnection() {
+    Connection getDatabaseConnection() {
         if (this.getConfig().getBoolean("mysql.enabled", false)) {
             try {
                 if (database == null || !database.isValid(1)) {
@@ -113,46 +116,82 @@ public class Permissions extends JavaPlugin {
         return database;
     }
 
+    public PermissionsPlayer getPlayer(OfflinePlayer player, World world) throws SQLException {
+        Group group = getPlayerGroup(player);
+        if (group == null) group = this.getDefaultGroup();
+        Timestamp expiration = this.getExpirationDate(player);
+        return new PermissionsPlayer(this, player, group, expiration, world);
+    }
+
+    public Group getDefaultGroup() { 
+        for (String key : this.getConfig().getConfigurationSection("groups").getKeys(false)) {
+            if (this.getConfig().getBoolean(String.format("groups.%s.default", key))) {
+                return new Group(this.getConfig(), key);
+            }
+        }
+        throw new RuntimeException(new InvalidConfigurationException(
+            "There is no default group defined for this server!"));
+    }
+
+    public Group getGroup(String name) {
+        if (this.getConfig().contains("groups." + name)) {
+            return new Group(this.getConfig(), name);
+        }
+        return null;
+    }
+
+    private Group getPlayerGroup(OfflinePlayer player) throws SQLException {
+        Group group = PlayerGroupDatabase.getGroup(this, player);
+        if (group != null) {
+            Timestamp expirationDate = PlayerGroupDatabase.getExpirationDate(
+                this.getDatabaseConnection(), player);
+            if (expirationDate != null && expirationDate.before(new Timestamp(System.currentTimeMillis()))) {
+                Group originalGroup = group;
+                group = group.getFallbackGroup();
+                this.getLogger().log(Level.FINE, "{0}''s role in the group {1} has expired - switching player to group {2}",
+                                    new Object[] {player.getName(), originalGroup.getName(), group.getName()});
+                PlayerGroupDatabase.setGroup(this.getDatabaseConnection(), player, group, null);
+            }
+        }
+        if (group == null) {
+            group = this.getDefaultGroup();
+            PlayerGroupDatabase.setGroup(this.getDatabaseConnection(), player, group, null);
+        }
+        return group;
+    }
+
+    private Timestamp getExpirationDate(OfflinePlayer player) throws SQLException {
+        return PlayerGroupDatabase.getExpirationDate(this.getDatabaseConnection(), player);
+    }
+
+    /**
+     * Recalculate and apply permissions on a player based on their current
+     * group. The plugin will attempt to load the player's group from the
+     * database and the configuration of the group. Permissions will remove any
+     * previous permissions attachments on the player and create one anew.
+     *
+     * @param player Online player to calculate permissions for.
+     */
     public void updatePermissions(Player player) {
         this.removeAttachment(player);
         PermissionAttachment attachment = player.addAttachment(this);
         this.attachments.put(player, attachment);
-        Group group = null;
+        Group group;
         try {
-            group = PlayerGroupDatabase.getGroup(this, player);
+            group = this.getPlayerGroup(player);
         } catch (SQLException ex) {
-            this.getLogger().log(Level.SEVERE, "Failed to get group for player " + player.getName(), ex);
+            this.getLogger().log(Level.SEVERE, "Failed to load group for " + player.getName(), ex);
+            player.sendMessage("There was an error loading your permissions.");
+            return;
         }
-        if(group != null) {
-            try {
-                Timestamp expirationDate = PlayerGroupDatabase.getExpirationDate(this,player);
-                if(expirationDate!=null && expirationDate.before(new Timestamp(System.currentTimeMillis()))) {
-                    group = group.getFallbackGroup(this.getConfig());
-                    PlayerGroupDatabase.setGroup(this, player, group, null);
-                }
-            } catch (SQLException ex) {
-                this.getLogger().log(Level.SEVERE, "Failed to check rank expiration for player " + player.getName(), ex);
-            }
-        }
-        if (group == null) {
-            group = Group.getDefaultGroup(this.getConfig());
-            if (group == null) {
-                throw new RuntimeException(new InvalidConfigurationException("There is no default group defined for this server!"));
-            }
-            try {
-                PlayerGroupDatabase.setGroup(this, player, group, null);
-            } catch (SQLException ex) {
-                this.getLogger().log(Level.SEVERE, "Failed to change rank to default for " + player.getName(), ex);
-            }
-        }
-        Map<String, Boolean> playerPermissions = group.getPermissions(this.getConfig(), player.getWorld());
+        Map<String, Boolean> playerPermissions = group.getPermissions(player.getWorld());
         for (Map.Entry<String, Boolean> entry : playerPermissions.entrySet()) {
             attachment.setPermission(entry.getKey(), entry.getValue());
         }
         player.setDisplayName(String.format("%s%s%s", group.getPrefix(), player.getName(), group.getSuffix()));
     }
 
-    public void removeAttachment(Player player) {
+    void removeAttachment(Player player) {
         if (attachments.containsKey(player)) {
             player.removeAttachment(attachments.remove(player));
         }
