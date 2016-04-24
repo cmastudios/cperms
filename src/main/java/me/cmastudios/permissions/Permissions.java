@@ -87,9 +87,10 @@ public final class Permissions extends JavaPlugin {
                 this.database = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getPath());
             }
             try (Statement initStatement = this.database.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playergroups (player VARCHAR(16) PRIMARY KEY, group_name TEXT, expiration_date DATETIME NULL)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS `playergroups` (`player` VARCHAR(36) PRIMARY KEY, `group_name` TEXT, `expiration_date` DATETIME NULL)");
                 try { // Update code
-                    initStatement.executeUpdate("ALTER TABLE playergroups ADD COLUMN expiration_date DATETIME NULL");
+                    initStatement.executeUpdate("ALTER TABLE `playergroups` MODIFY `player` VARCHAR(36) NOT NULL");
+                    initStatement.executeUpdate("ALTER TABLE `playergroups` ADD COLUMN `expiration_date` DATETIME NULL");
                 } catch (SQLException ignored) {
                 }
             }

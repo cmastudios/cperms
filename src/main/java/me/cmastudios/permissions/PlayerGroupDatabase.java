@@ -27,15 +27,23 @@ import org.bukkit.OfflinePlayer;
 class PlayerGroupDatabase {
 
     static Group getGroup(Permissions plugin, OfflinePlayer player) throws SQLException {
+    	// Check the database to see if the user is either in name or UUID format
+    	boolean idExists = inlineExistsUUID(player, plugin.getDatabaseConnection()), nameExists = inlineExistsName(player, plugin.getDatabaseConnection());
+    	// No results at all? Quit
+    	if (!idExists && !nameExists)
+    		return null;
+    	// Only name exists? Do a conversion first
+    	if (!idExists)
+    		inlineConvertToUUID(player, plugin.getDatabaseConnection());
+    	// Query the database again for the return
         try (PreparedStatement stmt = plugin.getDatabaseConnection().prepareStatement(
             "SELECT group_name FROM playergroups WHERE player = ?")) {
-            stmt.setString(1, player.getName());
+            stmt.setString(1, player.getUniqueId().toString());
             try (ResultSet result = stmt.executeQuery()) {
-                if (result.next()) {
+                if (result.next())
                     return plugin.getGroup(result.getString("group_name"));
-                } else {
+                else
                     return null;
-                }
             }
         }
     }
@@ -50,14 +58,14 @@ class PlayerGroupDatabase {
         try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
             stmt.setString(1, group.getName());
             stmt.setTimestamp(2, expirationDate);
-            stmt.setString(3, player.getName());
+            stmt.setString(3, player.getUniqueId().toString());
             stmt.executeUpdate();
         }
     }
 
     static boolean exists(Connection conn, OfflinePlayer player) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement("SELECT group_name FROM playergroups WHERE player = ?")) {
-            stmt.setString(1, player.getName());
+            stmt.setString(1, player.getUniqueId().toString());
             try (ResultSet result = stmt.executeQuery()) {
                 return result.next();
             }
@@ -67,13 +75,45 @@ class PlayerGroupDatabase {
     static Timestamp getExpirationDate(Connection conn, OfflinePlayer player) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(
             "SELECT expiration_date FROM playergroups WHERE player = ?")) {
-            stmt.setString(1, player.getName());
+            stmt.setString(1, player.getUniqueId().toString());
             try (ResultSet result = stmt.executeQuery()) {
                 if(result.next()) {
                     return result.getTimestamp("expiration_date");
                 } else {
                     return null;
                 }
+            }
+        }
+    }
+    
+    private static void inlineConvertToUUID(OfflinePlayer player, Connection connection) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "UPDATE playergroups SET player = ? WHERE player = ?"
+        )) {
+            stmt.setString(1, player.getUniqueId().toString());
+            stmt.setString(2, player.getName());
+            stmt.executeUpdate();
+        }
+    }
+
+    private static boolean inlineExistsUUID(OfflinePlayer player, Connection connection) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT * FROM playergroups WHERE player = ?"
+        )) {
+            stmt.setString(1, player.getUniqueId().toString());
+            try (ResultSet result = stmt.executeQuery()) {
+                return result.next();
+            }
+        }
+    }
+
+    private static boolean inlineExistsName(OfflinePlayer player, Connection connection) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT * FROM playergroups WHERE player = ?"
+        )) {
+            stmt.setString(1, player.getName());
+            try (ResultSet result = stmt.executeQuery()) {
+                return result.next();
             }
         }
     }
