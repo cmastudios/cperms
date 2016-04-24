@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.cmastudios</groupId>
     <artifactId>cpermissions</artifactId>
@@ -6,7 +7,7 @@
     <packaging>jar</packaging>
     <name>cPermissions</name>
     <url>http://cmastudios.me/cpermissions/</url>
-    <description>Permission manager plugin using mix of database and flatfile.</description>
+    <description>Permission manager plugin using mix of database and flat file.</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>me.cmastudios.permissions.Permissions</main.class>
@@ -43,26 +44,18 @@
     </issueManagement>
     <distributionManagement>
         <downloadUrl>http://cmastudios.me/cpermissions/</downloadUrl>
-        <repository>
-            <id>cma-repo-int</id>
-            <url>http://maven.cmastudios.me/archiva/repository/internal/</url>
-        </repository>
-        <snapshotRepository>
-            <id>cma-repo-snap</id>
-            <url>http://maven.cmastudios.me/archiva/repository/snapshots/</url>
-        </snapshotRepository>
     </distributionManagement>
     <repositories>
         <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/groups/public/</url>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
     <dependencies>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.7.9-R0.2</version>
+            <version>1.9.2-R0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>

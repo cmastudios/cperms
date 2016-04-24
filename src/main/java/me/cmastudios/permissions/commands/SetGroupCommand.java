@@ -16,9 +16,6 @@
  */
 package me.cmastudios.permissions.commands;
 
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.logging.Level;
 import me.cmastudios.permissions.Group;
 import me.cmastudios.permissions.Permissions;
 import me.cmastudios.permissions.PermissionsPlayer;
@@ -27,6 +24,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.logging.Level;
 
 /**
  *
@@ -45,7 +46,7 @@ public class SetGroupCommand implements CommandExecutor {
         if (args.length < 2) {
             return false;
         }
-        OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
+        @SuppressWarnings("deprecation") OfflinePlayer player = Bukkit.getOfflinePlayer(args[0]);
         Group group = plugin.getGroup(args[1]);
         if (group == null) {
             sender.sendMessage("Group not found");

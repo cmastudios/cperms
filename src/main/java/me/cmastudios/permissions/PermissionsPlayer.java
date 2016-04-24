@@ -5,6 +5,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -22,6 +23,7 @@ import java.util.Map;
  *
  * @author Connor Monahan
  */
+@SuppressWarnings("unused")
 public class PermissionsPlayer {
 
     private final Permissions plugin;
@@ -64,7 +66,7 @@ public class PermissionsPlayer {
      * necessary to call {@link Permissions#updatePermissions} if the player is
      * currently online.
      *
-     * @param Group The group to place the user in.
+     * @param group The group to place the user in.
      * @throws SQLException Database error saving the new group.
      */
     public void setGroup(Group group) throws SQLException {
@@ -140,10 +142,8 @@ public class PermissionsPlayer {
         Permission perm = Bukkit.getPluginManager().getPermission(permission);
         PermissionDefault def = PermissionDefault.OP;
         if (perm != null) def = perm.getDefault();
-        if (def == PermissionDefault.TRUE) return true;
-        if (def == PermissionDefault.OP && player.isOp()) return true;
-        if (def == PermissionDefault.NOT_OP && !player.isOp()) return true;
-        return false;
+        return def == PermissionDefault.TRUE || def == PermissionDefault.OP && player.isOp()
+                || def == PermissionDefault.NOT_OP && !player.isOp();
     }
 
     private void save() throws SQLException {
