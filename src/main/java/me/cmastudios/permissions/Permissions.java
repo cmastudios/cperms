@@ -17,6 +17,8 @@
 package me.cmastudios.permissions;
 
 import me.cmastudios.permissions.commands.SetGroupCommand;
+import me.cmastudios.permissions.commands.cPermsCommand;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -52,6 +54,7 @@ public final class Permissions extends JavaPlugin {
         this.getConfig().options().copyDefaults(false);
         this.getConfig().setDefaults(YamlConfiguration.loadConfiguration(new File("none"))); //Very very hacky
         this.connectDatabase();
+        this.getCommand("cpermissions").setExecutor(new cPermsCommand(this));
         this.getCommand("setgroup").setExecutor(new SetGroupCommand(this));
     }
 
