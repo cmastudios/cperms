@@ -16,24 +16,18 @@
  */
 package me.cmastudios.permissions;
 
-import java.sql.SQLException;
-import java.util.logging.Level;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 
 /**
- *
+ * Updates permissions when users change
  * @author Connor Monahan
  */
-public class PermissionsListener implements Listener {
+class PermissionsListener implements Listener {
 
     private final Permissions plugin;
 

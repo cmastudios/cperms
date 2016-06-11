@@ -16,9 +16,9 @@
  */
 package me.cmastudios.permissions;
 
-import java.sql.*;
-
 import org.bukkit.OfflinePlayer;
+
+import java.sql.*;
 
 /**
  *
@@ -63,7 +63,7 @@ class PlayerGroupDatabase {
         }
     }
 
-    static boolean exists(Connection conn, OfflinePlayer player) throws SQLException {
+    private static boolean exists(Connection conn, OfflinePlayer player) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement("SELECT group_name FROM playergroups WHERE player = ?")) {
             stmt.setString(1, player.getUniqueId().toString());
             try (ResultSet result = stmt.executeQuery()) {
