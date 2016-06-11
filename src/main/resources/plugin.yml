@@ -5,11 +5,18 @@ author: cmastudios
 website: ${project.url}
 main: ${main.class}
 commands:
+  cpermissions:
+    description: Miscellaneous utility commands
+    usage: /<command> <reload>
+    aliases: [cperms]
+    permission: cpermissions.utility
   setgroup:
     description: Set a player to a different group
     usage: /<command> <player> <group> [minutes]
     aliases: [chgrp, adduser]
     permission: cpermissions.control
 permissions:
+  cpermissions.utility:
+    description: Required in order to perform utility commands
   cpermissions.control:
     description: Required in order to change player's ranks
