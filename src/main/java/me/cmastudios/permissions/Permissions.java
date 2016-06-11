@@ -16,12 +16,7 @@
  */
 package me.cmastudios.permissions;
 
-import java.io.File;
-import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import me.cmastudios.permissions.commands.*;
+import me.cmastudios.permissions.commands.SetGroupCommand;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -30,6 +25,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+
 /**
  * Simple, lightweight permissions manager plugin cPermissions.
  *
@@ -37,11 +38,12 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public final class Permissions extends JavaPlugin {
 
-    private Map<Player, PermissionAttachment> attachments = new HashMap();
-    protected Connection database;
+    private Map<Player, PermissionAttachment> attachments;
+    private Connection database;
 
     @Override
     public void onEnable() {
+        attachments = new HashMap<>();
         this.getServer().getPluginManager().registerEvents(new PermissionsListener(this), this);
         for (Player player : this.getServer().getOnlinePlayers()) {
             this.updatePermissions(player);
@@ -63,6 +65,7 @@ public final class Permissions extends JavaPlugin {
             try {
                 this.database.close();
             } catch (SQLException ex) {
+                this.getLogger().log(Level.SEVERE, "Failed to close connection to database, data loss may occur.", ex);
             }
         }
     }
@@ -87,9 +90,10 @@ public final class Permissions extends JavaPlugin {
                 this.database = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getPath());
             }
             try (Statement initStatement = this.database.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playergroups (player VARCHAR(16) PRIMARY KEY, group_name TEXT, expiration_date DATETIME NULL)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS `playergroups` (`player` VARCHAR(36) PRIMARY KEY, `group_name` TEXT, `expiration_date` DATETIME NULL)");
                 try { // Update code
-                    initStatement.executeUpdate("ALTER TABLE playergroups ADD COLUMN expiration_date DATETIME NULL");
+                    initStatement.executeUpdate("ALTER TABLE `playergroups` MODIFY `player` VARCHAR(36) NOT NULL");
+                    initStatement.executeUpdate("ALTER TABLE `playergroups` ADD COLUMN `expiration_date` DATETIME NULL");
                 } catch (SQLException ignored) {
                 }
             }
@@ -116,6 +120,7 @@ public final class Permissions extends JavaPlugin {
         return database;
     }
 
+    @SuppressWarnings("SameParameterValue")
     public PermissionsPlayer getPlayer(OfflinePlayer player, World world) throws SQLException {
         Group group = getPlayerGroup(player);
         if (group == null) group = this.getDefaultGroup();
@@ -123,7 +128,7 @@ public final class Permissions extends JavaPlugin {
         return new PermissionsPlayer(this, player, group, expiration, world);
     }
 
-    public Group getDefaultGroup() { 
+    private Group getDefaultGroup() {
         for (String key : this.getConfig().getConfigurationSection("groups").getKeys(false)) {
             if (this.getConfig().getBoolean(String.format("groups.%s.default", key))) {
                 return new Group(this.getConfig(), key);

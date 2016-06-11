@@ -16,16 +16,13 @@
  */
 package me.cmastudios.permissions;
 
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 
 /**
  * Permissions groups define the permissions and other attributes (e.g name
@@ -45,6 +42,7 @@ import org.bukkit.configuration.ConfigurationSection;
  * @see PermissionsPlayer
  * @author Connor Monahan
  */
+@SuppressWarnings("WeakerAccess")
 public class Group {
 
     private final String name;
@@ -59,8 +57,8 @@ public class Group {
     /**
      * Create a new group from the group in the configuration.
      *
-     * @param groupRootSection section of the config where this group resides.
-     * Usually in groups.groupname.
+     * @param config Plugin configuration, containing group information.
+     * @param name Group name.
      */
     Group(Configuration config, String name) {
         ConfigurationSection groupRootSection = config.getConfigurationSection("groups." + name);
@@ -69,7 +67,7 @@ public class Group {
         this.prefix = ChatColor.translateAlternateColorCodes('&', groupRootSection.getString("info.prefix"));
         this.suffix = ChatColor.translateAlternateColorCodes('&', groupRootSection.getString("info.suffix"));
         this.allowedToBuild = groupRootSection.getBoolean("info.build");
-        this.inheritedGroups = new LinkedHashSet();
+        this.inheritedGroups = new LinkedHashSet<>();
         for (String inheritedGroupName : groupRootSection.getStringList("inheritance")) {
             ConfigurationSection section = groupRootSection.getParent().getConfigurationSection(inheritedGroupName);
             if (section == null) {
@@ -174,13 +172,13 @@ public class Group {
 
     /**
      * Get permissions assigned to a group. This includes permissions inherited
-     * from other groups and autoperms.
+     * from other groups and permissions based on group name.
      *
      * @param world World for world-specific permissions section
      * @return permissions assigned to this group in the specified world
      */
     public Map<String, Boolean> getPermissions(World world) {
-        Map<String, Boolean> permissions = new HashMap();
+        Map<String, Boolean> permissions = new HashMap<>();
         // Position 1, inherited groups
         try {
             for (Group group : this.getInheritedGroups()) {
@@ -191,11 +189,12 @@ public class Group {
             }
         } catch (StackOverflowError e) {
             permissions.clear();
-            throw new RuntimeException("WARNING! Potential inheritance loop!"); // No exception passing to prevent 1000000 line stack traces
+            throw new RuntimeException("WARNING! Potential inheritance loop!");
+            // No exception passing to prevent 1000000 line stack traces
         }
-        // Position 2, auto-assigned permissions
-        for (String autoperm : config.getStringList("autoperms")) {
-            SimpleEntry<String, Boolean> permission = this.parsePermission(String.format(autoperm, name));
+        // Position 2, permissions assigned based on group name
+        for (String namePermission : config.getStringList("autoperms")) {
+            SimpleEntry<String, Boolean> permission = this.parsePermission(String.format(namePermission, name));
             permissions.put(permission.getKey(), permission.getValue());
         }
         permissions.put("cpermissions.build", this.isAllowedToBuild());
@@ -221,6 +220,6 @@ public class Group {
             enabled = false;
             permission = permission.substring(1);
         }
-        return new AbstractMap.SimpleEntry(permission, enabled);
+        return new AbstractMap.SimpleEntry<>(permission, enabled);
     }
 }
