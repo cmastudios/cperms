@@ -28,9 +28,20 @@
                 <role>maintainer</role>
                 <role>developer</role>
             </roles>
-            <timezone>-5</timezone>
+            <timezone>America/Chicago</timezone>
         </developer>
     </developers>
+    <contributors>
+        <contributor>
+            <name>Dylan Hansch</name>
+            <email>dylan@dylanhansch.net</email>
+            <url>http://dylanhansch.net</url>
+            <roles>
+                <role>programmer</role>
+            </roles>
+            <timezone>America/Chicago</timezone>
+        </contributor>
+    </contributors>
     <licenses>
         <license>
             <name>GNU General Public License, Version 3.0</name>
@@ -44,6 +55,14 @@
     </issueManagement>
     <distributionManagement>
         <downloadUrl>http://cmastudios.me/cpermissions/</downloadUrl>
+        <repository>
+            <id>cma-releases</id>
+            <url>https://maven.cmastudios.me/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>cma-snapshots</id>
+            <url>https://maven.cmastudios.me/content/repositories/snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
     <repositories>
         <repository>
@@ -55,7 +74,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.9.2-R0.1-SNAPSHOT</version>
+            <version>1.9.4-R0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
